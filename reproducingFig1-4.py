@@ -51,7 +51,7 @@ def targetLabel(input, numberLength):
 
 def trainStep(weights, inputs, numberLength):
 	# We apply the perceptron training algorithm, as does the book
-	if perceptronOutput(weights, inputs) * targetLabel(inputs, numberLength) < 0:
+	if perceptronLabel(weights, inputs) * targetLabel(inputs, numberLength) <= 0:
 		# Update the weight vector:
 		weights = weights + inputs * targetLabel(inputs, numberLength)/np.sqrt(numberLength)
 	return weights
@@ -71,11 +71,19 @@ def trainOnce(p: int, numberLength: int = 10):
 	# Then run it through many training iterations with
 	# then return the generalization error 
 	weights = np.random.rand(numberLength * 2) * 2 - 1 # the book wasn't clear on how the weights were initialized, so I chose this.
+	weights = weights / np.linalg.norm(weights) * np.sqrt(numberLength * 2) # To ensure J^2 = N = 20
 	for idx in range(p):
 		weights = trainStep(weights, sampleOneExample(numberLength), numberLength)
 	return getGenErr(weights, numberLength)
 
-def runRankingExperiment(numSimulations: int = 1000, numberLength: int = 10):
+
+def AnnealedGenErr(alpha: float):
+	x = np.linspace(0.001, 0.999, 999)
+	f = lambda epsilon: 0.5*np.log((np.sin(np.pi * epsilon)**2)) + alpha * np.log(1 - epsilon)
+	fs = f(x)
+	return x[np.argmax(fs)]
+
+def runRankingExperiment(numSimulations: int = 10, numberLength: int = 10):
 	averageGeneralizationErrors = []
 	pList = [i * 10 for i in range(20)]
 	for p in pList:
@@ -85,6 +93,11 @@ def runRankingExperiment(numSimulations: int = 1000, numberLength: int = 10):
 		averageGeneralizationErrors.append(sum(generalizationErrors)/len(generalizationErrors))
 
 	plt.plot(pList, averageGeneralizationErrors)
+
+	#Obtain generalization error through annealed approximation (see book) and plot
+	AnnealedErrorList = [AnnealedGenErr(p / (numberLength * 2)) for p in pList]
+	plt.plot(pList, AnnealedErrorList)
 	plt.show()
 
 runRankingExperiment()
+
