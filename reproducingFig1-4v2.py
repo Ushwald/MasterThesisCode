@@ -46,17 +46,14 @@ def getGenErr(weights):
 			successCount += 1
 	return (1 - successCount / numIter)
 
-def trainPerceptron(trainingSet):
-	# Initialize a perceptron (its weights)
-	# Then run it through many training iterations with
-	# then return the generalization error 
-	weights = np.random.rand(trainingSet.shape[1]) * 2 - 1 # the book wasn't clear on how the weights were initialized, so I chose this.
+def trainPerceptron(startingWeights, trainingSet):
+	weights = startingWeights
 	for example in trainingSet:
 		# We apply the perceptron training algorithm, as does the book
-		if np.dot(weights, example) * targetLabel(example) <= 0:
+		if np.dot(startingWeights, example) * targetLabel(example) <= 0:
 			# Update the weight vector:
-			weights = weights + example * targetLabel(example)/np.sqrt(len(example//2))
-	return getGenErr(weights)
+			weights = startingWeights + example * targetLabel(example)/np.sqrt(len(example//2))
+	return weights
 
 def AnnealedGenErr(alpha: float):
 	x = np.linspace(0.001, 0.999, 999)
@@ -65,16 +62,21 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 100, numberLength: int = 10):
-	averageGeneralizationErrors = []
-	pList = [i * 10 for i in range(20)]
-	for p in pList:
-		generalizationErrors = []
-		for simIdx in range(numSimulations):
-			generalizationErrors.append(trainPerceptron(getTrainingSet(numberLength, p * 2)))
-		averageGeneralizationErrors.append(sum(generalizationErrors)/len(generalizationErrors))
+def runRankingExperiment(numSimulations: int = 10, numberLength: int = 10):
+	pList = [i * 10 for i in range(21)]
+	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
+	print(generalizationErrors.shape)
+	for simIdx in range(numSimulations):
+		trainingSet = getTrainingSet(numberLength, max(pList))
+		weights = np.random.rand(trainingSet.shape[1]) * 2 - 1 # initialize perceptron
 
-	plt.plot(pList, averageGeneralizationErrors)
+		# We train in intervals, therefore we have len(pList) - 1 intervals
+		for pIdx in range(len(pList)-1):
+			weights = trainPerceptron(weights, trainingSet[pList[pIdx]:pList[pIdx + 1]])
+			generalizationErrors[pIdx, simIdx] = getGenErr(weights)
+
+	# We trained in intervals, therefore we leave out 1 of the pList in both x- and y-axes 
+	plt.plot(pList[1:], [np.mean(generalizationErrors[i, :]) for i in range(len(pList) - 1)])
 
 	#Obtain generalization error through annealed approximation (see book) and plot
 	AnnealedErrorList = [AnnealedGenErr(p / (numberLength * 2)) for p in pList]
@@ -83,7 +85,5 @@ def runRankingExperiment(numSimulations: int = 100, numberLength: int = 10):
 
 runRankingExperiment()
 
-
-trainPerceptron(getTrainingSet(10, 3))
 
 
