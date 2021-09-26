@@ -36,23 +36,33 @@ def targetLabel(input):
 	if int(inputA, 2) > int(inputB, 2): return 1
 	else: return -1 
 
+def getErr(weights, exampleSet):
+	successCount = 0
+	for exampleIdx, _ in enumerate(exampleSet):
+		if (perceptronLabel(weights, exampleSet[exampleIdx]) == targetLabel(exampleSet[exampleIdx])):
+			successCount += 1
+	return (1 - successCount / len(exampleSet))
+
+
 def getGenErr(weights):
 	# I haven't figured out how to get an exact value for the gen err, so here I do it numerically:
 	numIter = 100
-	successCount = 0
 	testSet = getTrainingSet(len(weights)//2, numIter)
-	for exampleIdx, _ in enumerate(testSet):
-		if (perceptronLabel(weights, testSet[exampleIdx]) == targetLabel(testSet[exampleIdx])):
-			successCount += 1
-	return (1 - successCount / numIter)
+	return getErr(weights, testSet)
 
-def trainPerceptron(startingWeights, trainingSet):
+def trainPerceptron(startingWeights, trainingSet, untilConvergence = True): # Last bool indicates whether to converge
 	weights = startingWeights
-	for example in trainingSet:
-		# We apply the perceptron training algorithm, as does the book
-		if np.dot(startingWeights, example) * targetLabel(example) <= 0:
-			# Update the weight vector:
-			weights = startingWeights + example * targetLabel(example)/np.sqrt(len(example//2))
+
+	while True:
+		hasConverged = True #  If we insist on convergence, we may set this to false
+		for example in trainingSet:
+			# We apply the perceptron training algorithm, as does the book
+			if np.dot(weights, example) * targetLabel(example) <= 0:
+				# Update the weight vector:
+				weights = weights + example * targetLabel(example)/np.sqrt(len(example//2))
+				if untilConvergence: hasConverged = False 
+		if hasConverged: # The algorithm has converged
+			break
 	return weights
 
 def AnnealedGenErr(alpha: float):
@@ -62,25 +72,27 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 10, numberLength: int = 10):
+def runRankingExperiment(numSimulations: int = 100, numberLength: int = 10):
 	pList = [i * 10 for i in range(21)]
 	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
+	trainingErrors = []
 	print(generalizationErrors.shape)
 	for simIdx in range(numSimulations):
 		trainingSet = getTrainingSet(numberLength, max(pList))
 		weights = np.random.rand(trainingSet.shape[1]) * 2 - 1 # initialize perceptron
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
-		for pIdx in range(len(pList)-1):
-			weights = trainPerceptron(weights, trainingSet[pList[pIdx]:pList[pIdx + 1]])
+		for pIdx, p in enumerate(pList):
+			weights = trainPerceptron(weights, trainingSet[0:p])
 			generalizationErrors[pIdx, simIdx] = getGenErr(weights)
+			
 
 	# We trained in intervals, therefore we leave out 1 of the pList in both x- and y-axes 
-	plt.plot(pList[1:], [np.mean(generalizationErrors[i, :]) for i in range(len(pList) - 1)])
-
+	plt.plot(pList, [np.mean(generalizationErrors[i, :]) for i in range(len(pList))], label = "Generalization")
 	#Obtain generalization error through annealed approximation (see book) and plot
 	AnnealedErrorList = [AnnealedGenErr(p / (numberLength * 2)) for p in pList]
-	plt.plot(pList, AnnealedErrorList)
+	plt.plot(pList, AnnealedErrorList, label = "AA")
+	plt.legend()
 	plt.show()
 
 runRankingExperiment()
