@@ -15,7 +15,7 @@ class BinPerceptron(BinaryClassifier):
 				# We apply the perceptron training algorithm, as does the book
 				if self.output(example) * labels[exampleIdx] <= 0:
 					# Update the weight vector:
-					self.weights = self.weights + example * labels[exampleIdx]/np.sqrt(len(example//2))
+					self.weights = self.weights + example * labels[exampleIdx]/np.sqrt(self.N)
 					hasConverged = False 
 			if hasConverged: # The algorithm has converged
 				break

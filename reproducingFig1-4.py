@@ -5,14 +5,14 @@ from binaryClassifier import BinaryClassifier
 from perceptron import BinPerceptron
 
 #Generate dataset:
-def sampleOneExample(numberLength: int):
-	# Numberlength is the length in binary (-1, 1) encoded number
-	return np.array([random.randrange(2) * 2 - 1 for _ in range(numberLength * 2)])
+def sampleOneExample(N: int):
+	# N is twice the length of the binary (-1, 1) encoded number
+	return np.array([random.randrange(2) * 2 - 1 for _ in range(N)])
 
-def getTrainingSet(numberLength: int, p: int):
-	trainingSet = np.ndarray(shape = (p, 2 * numberLength), dtype = int)
+def getTrainingSet(N: int, p: int):
+	trainingSet = np.ndarray(shape = (p, N), dtype = int)
 	for exampleIdx, _ in enumerate(trainingSet):
-		trainingSet[exampleIdx] = sampleOneExample(numberLength)
+		trainingSet[exampleIdx] = sampleOneExample(N)
 	return trainingSet
 
 def targetLabel(input):
@@ -36,7 +36,7 @@ def targetLabel(input):
 def getGenErr(classifier: BinaryClassifier):
 	# I haven't figured out how to get an exact value for the gen err, so here I do it numerically:
 	numIter = 100
-	testSet = getTrainingSet(classifier.N//2, numIter) # divided by 2 because the function expects number length, not N
+	testSet = getTrainingSet(classifier.N, numIter) # divided by 2 because the function expects number length, not N
 	return classifier.getErr(testSet, np.array([targetLabel(testSet[i]) for i in range(len(testSet))]))
 
 
@@ -47,14 +47,14 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 100, numberLength: int = 10):
+def runRankingExperiment(numSimulations: int = 100, N: int = 20):
 	pList = [i * 10 for i in range(21)]
 	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
 	trainingErrors = []
 	for simIdx in range(numSimulations):
-		trainingSet = getTrainingSet(numberLength, max(pList))
+		trainingSet = getTrainingSet(N, max(pList))
 		trainingLabels = np.array([targetLabel(trainingSet[i]) for i in range(len(trainingSet))])
-		ptron = BinPerceptron(numberLength * 2)
+		ptron = BinPerceptron(N)
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
 		for pIdx, p in enumerate(pList):
@@ -65,7 +65,7 @@ def runRankingExperiment(numSimulations: int = 100, numberLength: int = 10):
 	# We trained in intervals, therefore we leave out 1 of the pList in both x- and y-axes 
 	plt.plot(pList, [np.mean(generalizationErrors[i, :]) for i in range(len(pList))], label = "Generalization")
 	#Obtain generalization error through annealed approximation (see book) and plot
-	AnnealedErrorList = [AnnealedGenErr(p / (numberLength * 2)) for p in pList]
+	AnnealedErrorList = [AnnealedGenErr(p / (N)) for p in pList]
 	plt.plot(pList, AnnealedErrorList, label = "AA")
 	plt.legend()
 	plt.show()
