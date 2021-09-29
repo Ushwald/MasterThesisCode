@@ -2,7 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 from binaryClassifier import BinaryClassifier
-from perceptron import BinPerceptron
+from MNPC import SimplifiedBinMNPC
+
+# In this file I hope to realize the number ranking problem with a naively and simply implemented
+# version of the MNPC, that is, one with unrealistically simplified NPC parameters. 
+# The purpose of this simplification is to make sure that each of the M=N NPCs simply outputs 
+# a single component of the N-dimensional inputs, such that training the readout weights amounts 
+# to just training a perceptron (in theory). This is the theory I want to check. 
 
 #Generate dataset:
 def sampleOneExample(N: int):
@@ -47,14 +53,14 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 100, N: int = 20):
+def runRankingExperiment(numSimulations: int = 1, N: int = 20):
 	pList = [i * 10 for i in range(21)]
 	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
 	trainingErrors = []
 	for simIdx in range(numSimulations):
 		trainingSet = getTrainingSet(N, max(pList))
 		trainingLabels = np.array([targetLabel(trainingSet[i]) for i in range(len(trainingSet))])
-		ptron = BinPerceptron(N)
+		ptron = SimplifiedBinMNPC(N, N)
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
 		for pIdx, p in enumerate(pList):
