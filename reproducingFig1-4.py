@@ -3,11 +3,12 @@ import matplotlib.pyplot as plt
 import random
 from binaryClassifier import BinaryClassifier
 from perceptron import BinPerceptron
+from MNPC import BinMNPC
 
 #Generate dataset:
 def sampleOneExample(N: int):
 	# N is twice the length of the binary (-1, 1) encoded number
-	return np.array([random.randrange(2) * 2 - 1 for _ in range(N)])
+	return np.mat([random.randrange(2) * 2 - 1 for _ in range(N)])
 
 def getTrainingSet(N: int, p: int):
 	trainingSet = np.ndarray(shape = (p, N), dtype = int)
@@ -47,17 +48,19 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 100, N: int = 20):
-	pList = [i * 10 for i in range(21)]
+def runRankingExperiment(numSimulations: int = 1, N: int = 10):
+	pList = [i * 10 for i in range(3)]
 	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
 	trainingErrors = []
 	for simIdx in range(numSimulations):
 		trainingSet = getTrainingSet(N, max(pList))
 		trainingLabels = np.array([targetLabel(trainingSet[i]) for i in range(len(trainingSet))])
-		ptron = BinPerceptron(N)
+		#ptron = BinPerceptron(N)
+		ptron = BinMNPC(5, N)
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
 		for pIdx, p in enumerate(pList):
+			print("Starting for new p: {}".format(p))
 			ptron.train(trainingSet[0:p], trainingLabels)
 			generalizationErrors[pIdx, simIdx] = getGenErr(ptron)
 			

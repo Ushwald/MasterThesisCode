@@ -10,7 +10,7 @@ class BinPerceptron(BinaryClassifier):
 	def train(self, examples, labels):
 		# Start with own weights, then continue training until converge on currently given examples
 		while True:
-			hasConverged = True #  If we insist on convergence, we may set this to false
+			hasConverged = True # may be set to false if update was still required
 			for exampleIdx, example in enumerate(examples):
 				# We apply the perceptron training algorithm, as does the book
 				if self.output(example) * labels[exampleIdx] <= 0:
