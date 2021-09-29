@@ -38,7 +38,7 @@ class BinMNPC(BinaryClassifier):
 			hasConverged = True # may be set to false if update was still required
 			for exampleIdx, example in enumerate(transformedExamples):
 				# We apply the perceptron training algorithm, as does the book
-				if self.label(example) * labels[exampleIdx] <= 0:
+				if self.perceptron.label(example) * labels[exampleIdx] <= 0:
 					# Update the weight vector:
 					self.perceptron.weights = self.perceptron.weights + example * labels[exampleIdx]/np.sqrt(self.N)
 					hasConverged = False 

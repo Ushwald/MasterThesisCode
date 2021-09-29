@@ -53,14 +53,14 @@ def AnnealedGenErr(alpha: float):
 	return x[np.argmax(fs)]
 
 
-def runRankingExperiment(numSimulations: int = 1, N: int = 20):
+def runRankingExperiment(numSimulations: int = 1, N: int = 5):
 	pList = [i * 10 for i in range(21)]
 	generalizationErrors = np.ndarray(shape = (len(pList), numSimulations))
 	trainingErrors = []
 	for simIdx in range(numSimulations):
 		trainingSet = getTrainingSet(N, max(pList))
 		trainingLabels = np.array([targetLabel(trainingSet[i]) for i in range(len(trainingSet))])
-		mnpc = SimplifiedBinMNPC(N * 3 , N)
+		mnpc = BinMNPC(N * 3 , N)
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
 		for pIdx, p in enumerate(pList):
