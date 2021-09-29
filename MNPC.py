@@ -68,7 +68,7 @@ class SimplifiedBinMNPC(BinaryClassifier):
 		# Therefore I replace them now, for debugging purposes, with a setup that should be equivalent to 
 		# just a perceptron (assuming N == M, with each of the NPC simply returning one input
 		self.omega_i = np.zeros(shape = (M, N**2))
-		for m in range(M):
+		for m in range(N):
 			self.omega_i[m, m * N + m] = 1.0
 		self.perceptron = BinPerceptron(M) # The perceptron takes inputs from each of the M NPC's
 
@@ -78,8 +78,8 @@ class SimplifiedBinMNPC(BinaryClassifier):
 		return 	np.array([np.dot(self.omega_i[i, :], np.array(np.matmul(example.T,  example).flatten())[0]) for i in range(self.M)]) * 2 - 1
 
 	def label(self, example):
+		# NOTE this function expects a raw input, not a transformed one
 		return 	self.perceptron.label(self.transformInput(np.mat(example)))
-
 
 
 	def train(self, examples, labels):
@@ -94,7 +94,7 @@ class SimplifiedBinMNPC(BinaryClassifier):
 			hasConverged = True # may be set to false if update was still required
 			for exampleIdx, example in enumerate(transformedExamples):
 				# We apply the perceptron training algorithm, as does the book
-				if self.label(example) * labels[exampleIdx] <= 0:
+				if self.perceptron.label(example) * labels[exampleIdx] <= 0:
 					# Update the weight vector:
 					self.perceptron.weights = self.perceptron.weights + example * labels[exampleIdx]/np.sqrt(self.N)
 					hasConverged = False 
@@ -126,26 +126,18 @@ def getTrainingSet(N: int, p: int):
 	return trainingSet
 
 # checking if our MNPC is indeed equivalent of a perceptron with the current simplifications:
-N = 3
-M = N
+#N = 3
+#M = N
 
-omega_i = np.zeros(shape = (M, N**2))
-for m in range(M):
-	omega_i[m, m * N + m] = 1.0
+#omega_i = np.zeros(shape = (M, N**2))
+#for m in range(M):
+#	omega_i[m, m * N + m] = 1.0
 
-ptron = BinPerceptron(N)
-mnpc = SimplifiedBinMNPC(N, N)
-print(omega_i)
-mnpc.perceptron = ptron
+#ptron = BinPerceptron(N)
+#mnpc = SimplifiedBinMNPC(N * 2, N)
+#print(mnpc.omega_i)
 
-example = sampleOneExample(N)
-print(example)
+#example = sampleOneExample(N)
+#print(example)
 #example = (example + 1) / 2
-#print(np.array([np.dot(omega_i[i, :], np.array(np.matmul(example.T,  example).flatten())[0]) for i in range(M)]) * 2 - 1 )
-
-
-print(mnpc.transformInput(example))
-print(ptron.label(example))
-print(mnpc.label(example))
-
-
+#print(np.array([np.dot(omega_i[i, :], np.array(np.matmul(example.T,  example).flatten())[0]) for i in range(M)]) * 2 - 1 

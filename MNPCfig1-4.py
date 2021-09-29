@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 from binaryClassifier import BinaryClassifier
-from MNPC import SimplifiedBinMNPC
+from MNPC import *
 
 # In this file I hope to realize the number ranking problem with a naively and simply implemented
 # version of the MNPC, that is, one with unrealistically simplified NPC parameters. 
@@ -60,12 +60,12 @@ def runRankingExperiment(numSimulations: int = 1, N: int = 20):
 	for simIdx in range(numSimulations):
 		trainingSet = getTrainingSet(N, max(pList))
 		trainingLabels = np.array([targetLabel(trainingSet[i]) for i in range(len(trainingSet))])
-		ptron = SimplifiedBinMNPC(N, N)
+		mnpc = SimplifiedBinMNPC(N * 3 , N)
 
 		# We train in intervals, therefore we have len(pList) - 1 intervals
 		for pIdx, p in enumerate(pList):
-			ptron.train(trainingSet[0:p], trainingLabels)
-			generalizationErrors[pIdx, simIdx] = getGenErr(ptron)
+			mnpc.train(trainingSet[0:p], trainingLabels)
+			generalizationErrors[pIdx, simIdx] = getGenErr(mnpc)
 			
 
 	# We trained in intervals, therefore we leave out 1 of the pList in both x- and y-axes 
