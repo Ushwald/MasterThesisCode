@@ -94,8 +94,7 @@ def runRankingExperiment(numSimulations: int = 5, N: int = 20):
 	#Obtain generalization error through annealed approximation (see book) and plot
 	AnnealedErrorList = [AnnealedGenErr(p / (N)) for p in pList]
 	plt.plot(pList, AnnealedErrorList, label = "AA for N-perceptron")
-	AnnealedErrorList = [AnnealedGenErr(p / (N^2)) for p in pList]
-	plt.plot(pList, AnnealedErrorList, label = "AA for N-squared-perceptron")
+
 	plt.legend()
 	plt.show()
 
