@@ -45,8 +45,7 @@ for figNumX in range(xFigs):
 		yco = np.array(yco)
 
 		H, xedges, yedges = np.histogram2d(xco, yco, bins=res, range=None, normed=None, weights=None, density=None)
-		fig = plt.figure(figsize=(7, 3))
-		ax = fig.add_subplot(131, title='imshow: square bins')
+		
 		axarr[figNumX,figNumY].imshow(H, interpolation='nearest', origin='lower',
 		        extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]])
 
