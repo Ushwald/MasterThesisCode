@@ -15,6 +15,8 @@ class BinNPC:
 		self.omega_i = (np.random.rand(N, N) - 0.5) * 2 
 		for i in range(N):
 			self.omega_i[i, i] = 0
+			for j in range(i):
+				self.omega_i[i, j] = self.omega_i[j, i]
 
 	
 		self.perceptron = BinPerceptron(N^2) # The perceptron takes inputs from each of the M NPC's

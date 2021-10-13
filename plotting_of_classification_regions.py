@@ -22,6 +22,9 @@ for figNumX in range(xFigs):
 	for figNumY in range(yFigs):
 		npc = BinNPC(2)
 
+		print(npc.W)
+		print(npc.omega_i)
+
 		xco = []
 		yco = []
 
