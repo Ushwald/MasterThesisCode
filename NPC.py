@@ -11,8 +11,8 @@ class BinNPC:
 		# initialize a random MNPC with M clusters in the layer
 		self.N = N
 		# Initialize NPC paremeters however you wish. Actual restrictions on NPC parameters should also go into the training function
-		self.W = np.random.rand(N)
-		self.omega_i = np.random.rand(N, N) 
+		self.W = (np.random.rand(N) - 0.5) * 2
+		self.omega_i = (np.random.rand(N, N) - 0.5) * 2 
 		for i in range(N):
 			self.omega_i[i, i] = 0
 
@@ -65,4 +65,3 @@ class BinNPC:
 			if (self.label(example) == labels[exampleIdx]):
 				successCount += 1
 		return (1 - successCount / len(examples))
-
