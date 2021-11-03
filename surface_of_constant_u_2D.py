@@ -8,8 +8,8 @@ xgrid, ygrid = np.meshgrid(vals,vals)
 
 def f(x, y, argWx, argWy, argomega, u):
     
-    ret = np.transpose([argWx*x + argWy*y + 2*argomega*x*y, argWx*x + argWy*y + 2*argomega*x*y, argWx*x + argWy*y + 2*argomega*x*y] )
-    res = argWx*x + argWy*y + 2*argomega*x*y
+    ret = np.transpose([argWx*x + argWy*y + 2*argomega*x*y, argWx*x + argWy*y + 2*argomega*x*y, argWx*x + argWy*y + 2*argomega*x*y] )/ 2
+    res = argWx*x + argWy*y + 2*argomega*x*y 
     for xidx, x in enumerate(res):
         for yidx, y in enumerate(x):
             if res[yidx, xidx] > u: #Switched coordinates as a lousy correction to the transpose made earlier
@@ -29,9 +29,9 @@ omega = 0
 u = 0.5
 
 ax = plt.subplot(111)
-plt.subplots_adjust(left=0.15, bottom=0.5)
-fig = plt.imshow(f(xgrid, ygrid, Wx, Wy, omega, u), cm.gray)
-
+plt.subplots_adjust(left=0.15, bottom=0.55)
+fig = plt.imshow(f(xgrid, ygrid, Wx, Wy, omega, u), cm.gray, origin = 'lower')
+plt.axis("off")
 fig.axes.get_xaxis().set_visible(True)
 fig.axes.get_yaxis().set_visible(True)
 plt.xlabel("x1")
@@ -67,6 +67,6 @@ def plotIsoLine(x, argWx, argWy, argomega, u):
     else:
         print("omega is 0")
         return t, t
-line, = plt.plot(t, plotIsoLine(t,sWx.val, sWy.val, somega.val, su.val)[1],  lw = 1, color = 'blue')
+#line, = plt.plot(t, plotIsoLine(t,sWx.val, sWy.val, somega.val, su.val)[1],  lw = 1, color = 'blue')
 
 plt.show()
