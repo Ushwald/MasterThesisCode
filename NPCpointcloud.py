@@ -35,8 +35,9 @@ def getX(N):
     return np.random.normal(0.0, 1.0, N)
 
 
-N = 4
+N = 8
 p = 100000
+alpha_val = min(1.0 / p * 10000, 1.0)
 npc1 = BinNPC(N)
 npc2 = BinNPC(N)
 
@@ -46,9 +47,18 @@ points = np.random.normal(0.0, 1.0, (N, p))
 activations1 = npc1.getActivations(points)
 activations2 = npc2.getActivations(points)
 
+fig = plt.figure(figsize=(8, 8), dpi=80)
+axes = plt.gca()
 
-plt.scatter(activations1, activations2, color = 'red', alpha = 0.1)
-plt.scatter(points[0], points[1], color = 'blue', alpha = 0.1)
+plt.scatter(activations1, activations2, color = 'red', alpha = alpha_val)
+plt.scatter(points[0], points[1], color = 'blue', alpha = alpha_val)
+
+
+axislim = [0.7 * min(axes.get_xlim()[0], axes.get_ylim()[0]),0.7 * max(axes.get_xlim()[1], axes.get_ylim()[1])]
+axes.set_xlim(axislim)
+axes.set_ylim(axislim)
+
+
 
 
 plt.show()
