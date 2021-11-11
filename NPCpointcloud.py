@@ -36,7 +36,7 @@ def getX(N):
     return np.random.normal(0.0, 1.0, N)
 
 
-N = 5
+N = 8
 p = 10000
 alpha_val = min(1.0 / p * 5000, 1.0)
 npc1 = BinNPC(N)
@@ -100,8 +100,11 @@ def plot():
     #axislim = [0.7 * min(axes.get_xlim()[0], axes.get_ylim()[0]),0.7 * max(axes.get_xlim()[1], axes.get_ylim()[1])]
     axes.set_xlim([-sZoom.val, sZoom.val])
     axes.set_ylim([-sZoom.val, sZoom.val])
+    plt.xlabel("npc1 activation")
+    plt.ylabel("npc2 activation")
 
 def update(val):
+    print('updating!')
     npc1.W = np.array([sW1[n].val for n in range(N)])
     npc2.W = np.array([sW2[n].val for n in range(N)])
     for n1 in range(1, N):
@@ -178,31 +181,39 @@ bKillOm2 = Button(axKillOm2, "Om2 to 0")
 
 def killW1(event):
     for n in range(N):
+        sW1[n].eventson = False
         npc1.W[n] = 0
         sW1[n].set_val(npc1.W[n])
-    plot()
+        sW1[n].eventson = True
+    update(None)
 def killW2(event):
     for n in range(N):
+        sW2[n].eventson = False
         npc2.W[n] = 0
         sW2[n].set_val(npc2.W[n])
-    plot()
+        sW2[n].eventson = True
+    update(None)
 def killOm1(event):
     for n1 in npc1.omega_i:
         for n2 in n1:
             n2 = 0
     for n1 in sOm1:
         for n2 in n1:
+            n2.eventson = False
             n2.set_val(0)
+            n2.eventson = True
     
-    plot()
+    update(None)
 def killOm2(event):
     for n1 in npc2.omega_i:
         for n2 in n1:
             n2 = 0
     for n1 in sOm2:
         for n2 in n1:
+            n2.eventson = False
             n2.set_val(0)
-    plot()
+            n2.eventson = True
+    update(None)
 
 bKillW1.on_clicked(killW1)
 bKillW2.on_clicked(killW2)
