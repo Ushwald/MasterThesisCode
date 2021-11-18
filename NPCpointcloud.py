@@ -3,6 +3,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
+import matplotlib.gridspec as gridspec
 
 
 class BinNPC:
@@ -46,7 +47,7 @@ def getInputs(N, p, distribution = 'normal'):
                 ret[pidx] = np.random.uniform(-1.0, 1.0, (N))
         return (ret - np.average(ret)).transpose()
 
-N = 3
+N = 10
 p = 10000
 alpha_val = min(1.0 / p * 5000, 1.0)
 npc1 = BinNPC(N)
@@ -67,25 +68,30 @@ points = getInputs(N, p, 'normal')
 activations1 = npc1.getActivations(points)
 activations2 = npc2.getActivations(points)
 
-fig = plt.figure(figsize=(20, 10), dpi=80)
-axes = plt.subplot(111)
-plt.subplots_adjust(right = 0.5)
-plt.xlabel("npc1 activation")
-plt.ylabel("npc2 activation")
+fig = plt.figure(figsize=(20, 10), dpi=80, constrained_layout=True)
+gs = fig.add_gridspec(nrows = 5, ncols = 5)
+axes = fig.add_subplot(gs[:4, :2])
+productaxes = fig.add_subplot(gs[4, :2])
+axes.set_xlabel("npc1 activation")
+axes.set_ylabel("npc2 activation")
 
-plt.scatter(activations1, activations2, color = 'red', alpha = alpha_val)
-plt.scatter(points[0], points[1], color = 'blue', alpha = alpha_val)
-
+axes.scatter(activations1, activations2, color = 'red', alpha = alpha_val)
+axes.scatter(points[0], points[1], color = 'blue', alpha = alpha_val)
 
 axislim = max(- 0.7 * min(axes.get_xlim()[0], axes.get_ylim()[0]),0.7 * max(axes.get_xlim()[1], axes.get_ylim()[1]))
 axes.set_xlim([-axislim, axislim])
 axes.set_ylim([-axislim, axislim])
 
+productaxes.set_xlabel("Activation product")
+productaxes.set_ylabel("Abundance")
+activationproducts = [activations1[i]*activations2[i] for i in range(len(activations1))]
 
+productaxes.hist(activationproducts, bins = int(p/100), range = (-5, 5))
 
 def plot():
     activations1 = npc1.getActivations(points)
     activations2 = npc2.getActivations(points)
+    activationproducts = [activations1[i]*activations2[i] for i in range(len(activations1))]
     agreement = 0.0
     for pidx in range(p):
         if np.sign(activations1[pidx]) == np.sign(activations2[pidx]):
@@ -93,15 +99,18 @@ def plot():
     agreement /= p 
     print("Agreement percentage: {:.4f}%; Activation mean: ({:.4f}, {:.4f})".format(agreement * 100, np.average(activations1), np.average(activations2)))
 
-    plt.sca(axes)
     axes.clear()
-    plt.scatter(activations1, activations2, color = 'red', alpha = sActivationAlpha.val)
-    plt.scatter(points[0], points[1], color = 'blue', alpha = sInputAlpha.val)
-    #axislim = [0.7 * min(axes.get_xlim()[0], axes.get_ylim()[0]),0.7 * max(axes.get_xlim()[1], axes.get_ylim()[1])]
+    axes.scatter(activations1, activations2, color = 'red', alpha = sActivationAlpha.val)
+    axes.scatter(points[0], points[1], color = 'blue', alpha = sInputAlpha.val)
     axes.set_xlim([-sZoom.val, sZoom.val])
     axes.set_ylim([-sZoom.val, sZoom.val])
-    plt.xlabel("npc1 activation")
-    plt.ylabel("npc2 activation")
+    axes.set_xlabel("npc1 activation")
+    axes.set_ylabel("npc2 activation")
+
+    productaxes.clear()
+    productaxes.set_xlabel("Activation product")
+    productaxes.set_ylabel("Abundance")
+    productaxes.hist(activationproducts, bins = int(p/100), range = (-5, 5))
 
 
 def update(val):
