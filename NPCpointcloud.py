@@ -32,33 +32,25 @@ class BinNPC:
             activations.append(activation)
         return activations
 
-def getX(N):
-    return np.random.normal(0.0, 1.0, N)
+def getInputs(N, p, distribution = 'normal'):
+    if distribution == 'normal':
+        ret = np.random.normal(0.0, 1.0, (N, p)).transpose()
+        return (ret - np.average(ret)).transpose() #Centered data
+    elif distribution == 'hypercube':
+        ret = np.random.uniform(-1.0, 1.0, (N, p)).transpose()
+        return (ret - np.average(ret)).transpose() #Centered data
+    elif distribution == 'hypersphere':
+        ret = np.random.uniform(-1.0, 1.0, (N, p)).transpose()
+        for pidx, point in enumerate(ret):
+            while np.linalg.norm(ret[pidx]) > 1.0:
+                ret[pidx] = np.random.uniform(-1.0, 1.0, (N))
+        return (ret - np.average(ret)).transpose()
 
-
-N = 8
+N = 3
 p = 10000
 alpha_val = min(1.0 / p * 5000, 1.0)
 npc1 = BinNPC(N)
 npc2 = BinNPC(N)
-
-
-#npc2.omega_i = np.zeros(shape = npc2.omega_i.shape)
-#npc1.omega_i = np.zeros(shape = npc1.omega_i.shape)
-
-#print("W: {}".format(npc2.W))
-#print("Omega: {}".format(npc2.omega_i))
-
-
-"""
-for idx, row in enumerate(npc1.omega_i):
-    for jdx, item in enumerate(row):
-        if not (jdx - idx == 2 or idx - jdx == 2):
-            npc1.omega_i[idx, jdx] = 0
-            npc2.omega_i[idx, jdx] = 0
-print(npc1.omega_i)
-"""
-
 
 
 # Create a point cloud plot of u, \underscore u activations for gaussian distributed inputs
@@ -70,7 +62,8 @@ def setParamsToZero():
     npc2.omega_i = np.zeros(shape = npc2.omega_i.shape)
 #setParamsToZero()
 
-points = np.random.normal(0.0, 1.0, (N, p))
+#points = np.random.normal(0.0, 1.0, (N, p))
+points = getInputs(N, p, 'normal')
 activations1 = npc1.getActivations(points)
 activations2 = npc2.getActivations(points)
 
@@ -93,6 +86,13 @@ axes.set_ylim([-axislim, axislim])
 def plot():
     activations1 = npc1.getActivations(points)
     activations2 = npc2.getActivations(points)
+    agreement = 0.0
+    for pidx in range(p):
+        if np.sign(activations1[pidx]) == np.sign(activations2[pidx]):
+            agreement += 1.0
+    agreement /= p 
+    print("Agreement percentage: {:.4f}%; Activation mean: ({:.4f}, {:.4f})".format(agreement * 100, np.average(activations1), np.average(activations2)))
+
     plt.sca(axes)
     axes.clear()
     plt.scatter(activations1, activations2, color = 'red', alpha = sActivationAlpha.val)
@@ -103,8 +103,8 @@ def plot():
     plt.xlabel("npc1 activation")
     plt.ylabel("npc2 activation")
 
+
 def update(val):
-    print('updating!')
     npc1.W = np.array([sW1[n].val for n in range(N)])
     npc2.W = np.array([sW2[n].val for n in range(N)])
     for n1 in range(1, N):
@@ -165,7 +165,7 @@ axActiavtionAlpha = plt.axes([0.75, 0.1, 0.06, 0.03])
 axZoom = plt.axes([0.90, 0.1, 0.06, 0.03])
 sInputAlpha = Slider(axInputAlpha, "Input Opacity", 0, .6, valinit = alpha_val)
 sActivationAlpha = Slider(axActiavtionAlpha, "Acivation Opacity", 0, .6, valinit = alpha_val)
-sZoom = Slider(axZoom, "Zoom", 0, axislim * 2, valinit = axislim)
+sZoom = Slider(axZoom, "Zoom", 0.01 * axislim, axislim * 4, valinit = axislim)
 sInputAlpha.on_changed(update)
 sActivationAlpha.on_changed(update)
 sZoom.on_changed(update)
@@ -202,7 +202,6 @@ def killOm1(event):
             n2.eventson = False
             n2.set_val(0)
             n2.eventson = True
-    
     update(None)
 def killOm2(event):
     for n1 in npc2.omega_i:
