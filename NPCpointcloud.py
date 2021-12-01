@@ -7,9 +7,7 @@ import matplotlib.gridspec as gridspec
 
 
 class BinNPC:
-    """This version of the NPC takes in symmetric binary inputs (-1 or 1)
-    It works simply by implicitly defining an N^2 perceptron and assigning the appropriate N^2 weights"""
-
+    
     def __init__(self, N: int):
         # initialize a random MNPC with M clusters in the layer
         self.N = N
@@ -47,7 +45,7 @@ def getInputs(N, p, distribution = 'normal'):
                 ret[pidx] = np.random.uniform(-1.0, 1.0, (N))
         return (ret - np.average(ret)).transpose()
 
-N = 10
+N = 3
 p = 10000
 alpha_val = min(1.0 / p * 5000, 1.0)
 npc1 = BinNPC(N)
