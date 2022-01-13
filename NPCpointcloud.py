@@ -13,6 +13,7 @@ class BinNPC:
         self.N = N
         # Initialize NPC paremeters however you wish. Actual restrictions on NPC parameters should also go into the training function
         # Normalize W, and experiment with restrictions on omega
+        self.threshold = 0.0
         self.W = (np.random.rand(N) - 0.5) * 2
         self.W = self.W / np.linalg.norm(self.W)# * N 
         self.omega_i = (np.random.rand(N, N) - 0.5)# * N 
@@ -21,14 +22,19 @@ class BinNPC:
             for j in range(i):
                 self.omega_i[i, j] = self.omega_i[j, i]
 
+    def getActivation(self, example):
+        activation =  np.dot(self.W, example)
+        for i in range(self.N):
+            for j in range(self.N):
+                activation += self.omega_i[i, j] * example[i] * example[j]
+        activation += self.threshold
+        return activation
+
+
     def getActivations(self, examples):
         activations = []
         for example in np.transpose(examples):
-            activation =  np.dot(self.W, example)
-            for i in range(self.N):
-                for j in range(self.N):
-                    activation += self.omega_i[i, j] * example[i] * example[j]
-            activations.append(activation)
+            activations.append(self.getActivation(example))
         return activations
 
 def getInputs(N, p, distribution = 'normal'):
@@ -45,7 +51,7 @@ def getInputs(N, p, distribution = 'normal'):
                 ret[pidx] = np.random.uniform(-1.0, 1.0, (N))
         return (ret - np.average(ret)).transpose()
 
-N = 3
+N = 2
 p = 10000
 alpha_val = min(1.0 / p * 5000, 1.0)
 npc1 = BinNPC(N)
@@ -120,6 +126,8 @@ def update(val):
             npc2.omega_i[n1, n2] = sOm2[n1-1][n2].val
             npc1.omega_i[n2, n1] = sOm1[n1-1][n2].val
             npc2.omega_i[n2, n1] = sOm2[n1-1][n2].val
+            npc1.threshold = sThreshold1.val
+            npc2.threshold = sThreshold2.val
     plot()
     
 
@@ -176,6 +184,13 @@ sZoom = Slider(axZoom, "Zoom", 0.01 * axislim, axislim * 4, valinit = axislim)
 sInputAlpha.on_changed(update)
 sActivationAlpha.on_changed(update)
 sZoom.on_changed(update)
+
+axThreshold1 = plt.axes([0.6, 0.05, 0.06, 0.03])
+sThreshold1 = Slider(axThreshold1, "Threshold 1", -2, 2, valinit = 0)
+sThreshold1.on_changed(update)
+axThreshold2 = plt.axes([0.90, 0.05, 0.06, 0.03])
+sThreshold2 = Slider(axThreshold2, "Threshold 2", -2, 2, valinit = 0)
+sThreshold2.on_changed(update)
 
 axKillW1 = plt.axes([0.6, 0.95, 0.04, 0.03])
 axKillW2 = plt.axes([0.7, 0.95, 0.04, 0.03])
