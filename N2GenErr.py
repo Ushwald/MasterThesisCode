@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 import math
 
 # This file serves to obtain by monte carlo simulation the generalization error for nonzero temperature
@@ -39,47 +40,61 @@ def RandConfig(nParams = 3):
 	config = np.random.random((1, 3)) * 2 - 1
 	return config[0] / np.linalg.norm(config) * np.sqrt(2) # N = 2
 
-def RunMCSNoThreshold(beta, alpha, runs, MCS):
+def RunMCSNoThreshold(beta, alphas, runs, MCS, discard = 100):
 	# Randomly initialize the parameters from a sphere
 	W1, W2, Omega = RandConfig()
 
-	GenErrArray = np.ndarray((runs, MCS + 1))
-	acceptcount = 0
-	nacceptcount = 0
+	GenErrArray = np.ndarray((len(alphas), runs, MCS + 1))
 
-	for run in range(runs):
-		# Get training data:
-		trainInputs = RandInputs(round(alpha / beta * 2))
-		targetOutputs = [-inp[0] * inp[1] for inp in trainInputs]
+	for alphaidx in range(len(alphas)):
 
-		step = 0
-		while(True):
-			# Store the generalization error:
-			GenErrArray[run, step] = getGenError(W1, W2, Omega)
-			# Calculate energy/training error:
-			E = sum([ GetError(W1, W2, Omega, trainInputs[i]) for i in range(len(trainInputs))])
-			
-			#Make an adjustment to the parameters, and determine whether it is to be accepted:
-			newconf =  [W1, W2, Omega].copy()
-			for idx in range(len(newconf)):
-				newconf[idx] += np.random.normal(scale = 99)
+		for run in range(runs):
+			# Get training data:
+			trainInputs = RandInputs(round(alphas[alphaidx] / beta * 2))
+			targetOutputs = [-inp[0] * inp[1] for inp in trainInputs]
+
+			step = 0
+			acceptcount = 0
+			nacceptcount = 0
+			while(True):
+				# Store the generalization error:
+				GenErrArray[alphaidx, run, step] = getGenError(W1, W2, Omega)
+				# Calculate energy/training error:
+				E = sum([ GetError(W1, W2, Omega, trainInputs[i]) for i in range(len(trainInputs))])
 				
-			newconf = newconf/np.linalg.norm(newconf)
-			
-			newE = sum([GetError(newconf[0], newconf[1], newconf[2], trainInputs[i]) for i in range(len(trainInputs))])
-			
-			if np.random.random() < min(1, np.exp(-beta * (newE - E))):
-				[W1, W2, Omega] = newconf
-				acceptcount += 1
-				pass
-			else:
-				nacceptcount +=1
+				#Make an adjustment to the parameters, and determine whether it is to be accepted:
+				newconf =  [W1, W2, Omega].copy()
+				for idx in range(len(newconf)):
+					newconf[idx] += np.random.normal(scale = 0.3)
+					
+				newconf = newconf/np.linalg.norm(newconf)
+				
+				newE = sum([GetError(newconf[0], newconf[1], newconf[2], trainInputs[i]) for i in range(len(trainInputs))])
+				
+				if np.random.random() < min(1, np.exp(-beta * (newE - E))):
+					[W1, W2, Omega] = newconf
+					acceptcount += 1
+					pass
+				else:
+					nacceptcount +=1
 
-			if step >= MCS:
-				break
-			step += 1
+				if step >= MCS:
+					break
 
-		print(acceptcount, nacceptcount)
-RunMCSNoThreshold(0.01, 1, 1, 500)
+				step += 1
+			print(acceptcount, nacceptcount)
+	print("test")
+	fig = plt.figure()
+	plottableData = np.array([np.average(GenErrArray[a, :, discard:])for a, _ in enumerate(alphas)])
+	with open('data/MCdata.npy', 'wb') as f:
+		np.save(f, GenErrArray)
+
+	
+	print(plottableData)
+	
+	plt.plot([GenErrArray[a, 0, :] for a in range(len(alphas))][0])
+	plt.show()
+		
+RunMCSNoThreshold(beta = 0.001, alphas = [i + 1 for i in range(10)], runs = 10, MCS = 500, discard = 100)
 
 
