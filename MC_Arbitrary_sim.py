@@ -15,8 +15,6 @@ scenario = 'binary' # or Gaussian
 
 
 
-
-
 def generateTrainingData(P):
 	if scenario == 'binary':
 		return np.array([[1 if np.random.random() > 0.5 else -1 for _ in range(N)]for _ in range(P)])

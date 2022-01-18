@@ -65,7 +65,7 @@ def RunMCSNoThreshold(beta, alphas, runs, MCS, discard = 100):
 				#Make an adjustment to the parameters, and determine whether it is to be accepted:
 				newconf =  [W1, W2, Omega].copy()
 				for idx in range(len(newconf)):
-					newconf[idx] += np.random.normal(scale = 0.3)
+					newconf[idx] += np.random.normal(scale = 1.0)
 					
 				newconf = newconf/np.linalg.norm(newconf)
 				
@@ -86,7 +86,8 @@ def RunMCSNoThreshold(beta, alphas, runs, MCS, discard = 100):
 	print("test")
 	fig = plt.figure()
 	plottableData = np.array([np.average(GenErrArray[a, :, discard:])for a, _ in enumerate(alphas)])
-	with open('data/MCdata.npy', 'wb') as f:
+	#with open('data/MCdata.npy', 'wb') as f:	
+	with open('data/MCdata_verysmallalpha.npy', 'wb') as f:
 		np.save(f, GenErrArray)
 
 	
@@ -95,6 +96,8 @@ def RunMCSNoThreshold(beta, alphas, runs, MCS, discard = 100):
 	plt.plot([GenErrArray[a, 0, :] for a in range(len(alphas))][0])
 	plt.show()
 		
-RunMCSNoThreshold(beta = 0.001, alphas = [i + 1 for i in range(10)], runs = 10, MCS = 500, discard = 100)
+RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 100 for i in range(9)], runs = 100, MCS = 5000, discard = 1000)
+#RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 10 for i in range(9)], runs = 10, MCS = 500, discard = 100)
 
+# for most experiments discard was 100, MCS was 500, runs = 20, but for verysmallalpha.npy I did MCS 5000, runs = 100, discard = 1000. Also Gaussian scale was 0.3 for most, but verysmallalpha has 1.0.
 
