@@ -41,10 +41,11 @@ for i, title in enumerate(titles):
 
 	plt.errorbar(x = Plist, y = plottableData, yerr = stderrs, color = palette[i], linewidth = 2)
 
+plt.plot([i for i in range(10)], [0.5**i for i in range(10)], color = palette[len(titles)], linewidth = 2)
 plt.plot(analyticdata[0], analyticdata[1], color = palette[len(titles)], linewidth = 2)
 
 
-plt.legend(['T0'])
+plt.legend(['Rough estimate','T0'])
 
 plt.show()
 
