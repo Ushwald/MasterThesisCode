@@ -43,7 +43,15 @@ for i, title in enumerate(titles):
 	plottableData = np.average(runsData, axis = 1)
 	stderrs = np.std(runsData, axis = 1)
 
-	plt.errorbar(x = alphas, y = plottableData, yerr = stderrs, color = palette[i], linewidth = 2, label = 'MC at T = {}'.format(T), linestyle = 'dashed', mew = 2, fmt = '.k', elinewidth = 1)
+	print(len(alphas))
+	plt.errorbar(x = alphas, y = plottableData, yerr = stderrs, color = palette[i], linewidth = 2, label = 'MC at T = {}'.format(T), linestyle = 'dashed', mew = 2, fmt = '.k', elinewidth = len(titles) - i)
+	#for r in runsData.T:
+	#	plt.plot(alphas, r)
+	#plt.plot(alphas, plottableData, color = palette[i], linewidth = 2, label = 'MC at T = {}'.format(T), mew = 2, marker = 'o', markersize = 4)
+	#plt.plot(alphas, np.add(plottableData, 0.5 * stderrs), color = palette[i], linewidth = 1, linestyle = 'dashed')
+	#plt.plot(alphas, np.add(plottableData, -0.5 * stderrs), color = palette[i], linewidth = 1, linestyle = 'dashed')
+
+
 
 plt.plot(analyticdata[0], analyticdata[1], color = palette[len(titles)], linewidth = 2, label = 'Annealed Approximation')
 

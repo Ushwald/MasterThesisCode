@@ -41,17 +41,25 @@ def RandConfig(nParams = 3):
 	config = np.random.random((1, 3)) * 2 - 1
 	return config[0] / np.linalg.norm(config) * np.sqrt(2) # N = 2
 
-def RunMCSNoThreshold(beta, alphas, runs, MCS, title, discard = 100, step_scale = 0.5):
+def RunMCSNoThreshold(beta, targetAlphas, runs, MCS, title, discard = 100, step_scale = 0.5): #Target alphas are alphas we aim for, but due to rounding may not precisely realize
 	# Randomly initialize the parameters from a sphere
 	W1, W2, Omega = RandConfig()
 
-	GenErrArray = np.ndarray((len(alphas), runs, MCS + 1))
+	
+	trueAlphas = []
 
-	for alphaidx in range(len(alphas)):
+	for alphaidx in range(len(targetAlphas)):
+		if  round(targetAlphas[alphaidx] / beta * 2) * beta / 2 in trueAlphas:
+			pass
+		else:
+			trueAlphas.append(round(targetAlphas[alphaidx] / beta * 2) * beta / 2)
 
+	GenErrArray = np.ndarray((len(trueAlphas), runs, MCS + 1))
+
+	for alphaidx in range(len(trueAlphas)):
 		for run in range(runs):
 			# Get training data:
-			trainInputs = RandInputs(round(alphas[alphaidx] / beta * 2))
+			trainInputs = RandInputs(round(trueAlphas[alphaidx] / beta * 2))
 			targetOutputs = [-inp[0] * inp[1] for inp in trainInputs]
 
 			step = 0
@@ -87,17 +95,18 @@ def RunMCSNoThreshold(beta, alphas, runs, MCS, title, discard = 100, step_scale 
 	#plottableData = np.array([np.average(GenErrArray[a, :, discard:])for a, _ in enumerate(alphas)])
 	#with open('data/MCdata.npy', 'wb') as f:	
 	with open('data/{}.npy'.format(title), 'wb') as f:
-		pickle.dump((GenErrArray, alphas, beta, runs, MCS, step_scale, discard), f)
+		print(trueAlphas)
+		pickle.dump((GenErrArray, np.array(trueAlphas), beta, runs, MCS, step_scale, discard), f)
 		#np.save(f, GenErrArray)
 
 		
-	plt.plot([GenErrArray[a, 0, :] for a in range(len(alphas))][0])
-	plt.show()
+	#plt.plot([GenErrArray[a, 0, :] for a in range(len(alphas))][0])
+	#plt.show()
 		
-RunMCSNoThreshold(beta = 0.001, alphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1000_bigrun')
-RunMCSNoThreshold(beta = 0.01, alphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T100_bigrun')
-RunMCSNoThreshold(beta = 0.1, alphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T10_bigrun')
-RunMCSNoThreshold(beta = 1, alphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1_bigrun')
+#RunMCSNoThreshold(beta = 0.001, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1000_bigrun')
+#RunMCSNoThreshold(beta = 0.01, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T100_bigrun')
+#RunMCSNoThreshold(beta = 0.1, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T10_bigrun')
+RunMCSNoThreshold(beta = 1, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1_bigrun')
 
 #RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 10 for i in range(9)], runs = 10, MCS = 500, discard = 100)
 
