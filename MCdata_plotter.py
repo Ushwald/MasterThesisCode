@@ -21,19 +21,22 @@ fig = plt.figure()
 
 palette = sns.color_palette()
 
-plt.xlabel('α', fontsize = 16)
-plt.ylabel('Generalization Error', fontsize = 16)
+plt.xlabel('$α$', fontsize = 16, )
+plt.ylabel('Generalization Error $\epsilon_g$', fontsize = 16)
 plt.xlim(0,6)
 plt.xticks(fontsize = 12)
 plt.yticks(fontsize = 10)
 
 #titles = ['T1000_bigrun', 'T100_bigrun', 'T10_bigrun', 'T1_bigrun']
+
+plt.plot(analyticdata[0], analyticdata[1], color = palette[0], linewidth = 3, label = 'Annealed Approximation')
 titles = ['T1000_bigrun', 'T1_bigrun']
 for i, title in enumerate(titles):
 
 	with open('data/{}.npy'.format(title), 'rb') as f:
 		experiment_metadata = pickle.load(f)
 		#GenErrArray, alphas, beta, runs, MCS, step_scale, discard
+	print(experiment_metadata[1:])
 	data = experiment_metadata[0]
 	alphas = experiment_metadata[1]
 	discard = experiment_metadata[6]
@@ -44,7 +47,7 @@ for i, title in enumerate(titles):
 	stderrs = np.std(runsData, axis = 1)
 
 	print(len(alphas))
-	plt.errorbar(x = alphas, y = plottableData, yerr = stderrs, color = palette[i], linewidth = 2, label = 'MC at T = {}'.format(T), linestyle = 'dashed', mew = 2, fmt = '.k', elinewidth = len(titles) - i)
+	plt.errorbar(x = alphas, y = plottableData, yerr = stderrs, color = palette[i + 1], linewidth = 2, label = 'MC at T = {}'.format(T), linestyle = 'dashed', mew = 2, fmt = '.k', elinewidth = len(titles) - i)
 	#for r in runsData.T:
 	#	plt.plot(alphas, r)
 	#plt.plot(alphas, plottableData, color = palette[i], linewidth = 2, label = 'MC at T = {}'.format(T), mew = 2, marker = 'o', markersize = 4)
@@ -53,7 +56,7 @@ for i, title in enumerate(titles):
 
 
 
-plt.plot(analyticdata[0], analyticdata[1], color = palette[len(titles)], linewidth = 2, label = 'Annealed Approximation')
+#plt.plot(analyticdata[0], analyticdata[1], color = 'lightgreen', linewidth = 2, label = 'Annealed Approximation')
 
 plt.legend()
 #plt.legend(['Annealed Approximation', 'MC at T = 1000 ', 'MC at T = 100', 'MC at T = 10', 'MC at T = 1'])
