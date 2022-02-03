@@ -87,7 +87,7 @@ def RunMCSNoThreshold(Plist, runs, MCS, title, discard = 100, step_scale = 0.5):
 		pickle.dump((GenErrArray, Plist, runs, MCS, step_scale, discard), f)
 
 				
-RunMCSNoThreshold(Plist = [i for i in range(15)], runs = 50, MCS = 500, discard = 100, step_scale = 0.7, title = 'T0_experiment')
+RunMCSNoThreshold(Plist = [i for i in range(15)], runs = 200, MCS = 500, discard = 100, step_scale = 0.7, title = 'T0_experiment')
 
 
 #RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 10 for i in range(9)], runs = 10, MCS = 500, discard = 100)

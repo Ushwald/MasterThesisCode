@@ -4,7 +4,13 @@ import random
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button
 import matplotlib.gridspec as gridspec
+import seaborn as sns
+from matplotlib.transforms import Bbox
+import matplotlib as mpl
 
+
+palette = sns.color_palette()
+plt.style.use('seaborn-whitegrid')
 
 class BinNPC:
     
@@ -76,18 +82,32 @@ fig = plt.figure(figsize=(20, 10), dpi=80, constrained_layout=True)
 gs = fig.add_gridspec(nrows = 5, ncols = 5)
 axes = fig.add_subplot(gs[:4, :2])
 productaxes = fig.add_subplot(gs[4, :2])
-axes.set_xlabel("npc1 activation")
-axes.set_ylabel("npc2 activation")
+axes.set_xlabel("Teacher Activation", fontsize = 16)
+axes.set_ylabel("Student Activation", fontsize = 16)
 
-axes.scatter(activations1, activations2, color = 'red', alpha = alpha_val)
-axes.scatter(points[0], points[1], color = 'blue', alpha = alpha_val)
+axes.scatter(activations1, activations2, color = palette[1], alpha = alpha_val, label = "Activations")
+axes.scatter(points[0], points[1], color = palette[0], alpha = alpha_val, label = "Input Features")
+
+#Used for selectively saving only the cloud plot
+def full_extent(ax, pad=0.0):
+    """Get the full extent of an axes, including axes labels, tick labels, and
+    titles."""
+    # For text objects, we need to draw the figure first, otherwise the extents
+    # are undefined.
+    ax.figure.canvas.draw()
+    items = ax.get_xticklabels() + ax.get_yticklabels() 
+#    items += [ax, ax.title, ax.xaxis.label, ax.yaxis.label]
+    items += [ax, ax.title]
+    bbox = Bbox.union([item.get_window_extent() for item in items])
+
+    return bbox.expanded(1.0 + pad, 1.0 + pad)
 
 axislim = max(- 0.7 * min(axes.get_xlim()[0], axes.get_ylim()[0]),0.7 * max(axes.get_xlim()[1], axes.get_ylim()[1]))
 axes.set_xlim([-axislim, axislim])
 axes.set_ylim([-axislim, axislim])
 
-productaxes.set_xlabel("Activation product")
-productaxes.set_ylabel("Abundance")
+productaxes.set_xlabel("Activation product", fontsize = 16)
+productaxes.set_ylabel("Abundance", fontsize = 16)
 activationproducts = [activations1[i]*activations2[i] for i in range(len(activations1))]
 
 productaxes.hist(activationproducts, bins = int(p/100), range = (-5, 5))
@@ -104,16 +124,16 @@ def plot():
     print("Agreement percentage: {:.4f}%; Activation mean: ({:.4f}, {:.4f})".format(agreement * 100, np.average(activations1), np.average(activations2)))
 
     axes.clear()
-    axes.scatter(activations1, activations2, color = 'red', alpha = sActivationAlpha.val)
-    axes.scatter(points[0], points[1], color = 'blue', alpha = sInputAlpha.val)
+    axes.scatter(activations1, activations2, color = palette[1], alpha = sActivationAlpha.val)
+    axes.scatter(points[0], points[1], color = palette[0], alpha = sInputAlpha.val)
     axes.set_xlim([-sZoom.val, sZoom.val])
     axes.set_ylim([-sZoom.val, sZoom.val])
-    axes.set_xlabel("npc1 activation")
-    axes.set_ylabel("npc2 activation")
+    axes.set_xlabel("Teacher Activation", fontsize = 16)
+    axes.set_ylabel("Student Activation", fontsize = 16)
 
     productaxes.clear()
-    productaxes.set_xlabel("Activation product")
-    productaxes.set_ylabel("Abundance")
+    productaxes.set_xlabel("Activation product", fontsize = 16)
+    productaxes.set_ylabel("Abundance", fontsize = 16)
     productaxes.hist(activationproducts, bins = int(p/100), range = (-5, 5))
 
 
@@ -143,7 +163,7 @@ for n in range(N):
     axW1.append(plt.axes([0.6 + 0.4 / N * n, 0.90, 0.20 / N, 0.03]))
     axW2.append(plt.axes([0.6 + 0.4 / N * n, 0.85, 0.20 / N, 0.03]))
 
-    labels = ["{}".format(n) if n > 0 else "NPC{} W_:{}".format(i+1, n) for i in range(2)]
+    labels = ["{}".format(n) if n > 0 else "{} W_:{}".format(name, n) for name in ["Teacher", "Student"]]
 
     sW1.append(Slider(axW1[n], labels[0], -1, 1, valinit=npc1.W[n]))
     sW2.append(Slider(axW2[n], labels[1], -1, 1, valinit=npc2.W[n]))
@@ -165,7 +185,7 @@ for n1 in range(1, N):
         axOm1[n1-1].append(plt.axes([0.5 + 0.4/N * (n1), 0.75 - 0.3/N*n2, 0.20 / N, 0.03]))
         axOm2[n1-1].append(plt.axes([0.5 + 0.4/N * (n1), 0.40 - 0.3/N*n2, 0.20 / N, 0.03]))
 
-        labels = ["{},{}".format(n1, n2) if (n1 > 1 or n2 > 0) else "NPC{} Om_:{},{}".format(i+1, n1, n2) for i in range(2)]
+        labels = ["{},{}".format(n1, n2) if (n1 > 1 or n2 > 0) else "{} Om_:{},{}".format(name, n1, n2) for name in ["Teacher", "Student"]]
 
         sOm1[n1-1].append(Slider(axOm1[n1-1][n2], labels[0], -1, 1, valinit=npc1.omega_i[n1, n2]))
         sOm2[n1-1].append(Slider(axOm2[n1-1][n2], labels[1], -1, 1, valinit=npc2.omega_i[n1, n2]))
@@ -191,6 +211,9 @@ sThreshold1.on_changed(update)
 axThreshold2 = plt.axes([0.90, 0.05, 0.06, 0.03])
 sThreshold2 = Slider(axThreshold2, "Threshold 2", -2, 2, valinit = 0)
 sThreshold2.on_changed(update)
+
+axSaveCloud = plt.axes([0.75, 0.05, 0.06, 0.03])
+bSaveCloud = Button(axSaveCloud, "Save Pointcloud")
 
 axKillW1 = plt.axes([0.6, 0.95, 0.04, 0.03])
 axKillW2 = plt.axes([0.7, 0.95, 0.04, 0.03])
@@ -236,10 +259,15 @@ def killOm2(event):
             n2.eventson = True
     update(None)
 
+def SavePointCloud(event):
+    extent = full_extent(axes).transformed(fig.dpi_scale_trans.inverted())
+    fig.savefig('Pointcloud_last_snapshot.png', bbox_inches=extent, pad_inches = 10)
+
 bKillW1.on_clicked(killW1)
 bKillW2.on_clicked(killW2)
 bKillOm1.on_clicked(killOm1)
 bKillOm2.on_clicked(killOm2)
+bSaveCloud.on_clicked(SavePointCloud)
 
 
 plt.show()

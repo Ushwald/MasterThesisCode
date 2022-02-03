@@ -21,7 +21,7 @@ fig = plt.figure()
 
 palette = sns.color_palette()
 
-plt.xlabel('$α$', fontsize = 16, )
+plt.xlabel('$α = β P / N$', fontsize = 16, )
 plt.ylabel('Generalization Error $\epsilon_g$', fontsize = 16)
 plt.xlim(0,6)
 plt.xticks(fontsize = 12)
