@@ -5,21 +5,20 @@ import math
 import pickle
 
 # This file serves to obtain by monte carlo simulation the generalization error for nonzero temperature
-# and thereby give empirical data to compare with the AA obtained result. 
+# and thereby give empirical data to compare with the AA obtained result (binary-input MP classifier, N=2, T>0). 
 
 """Steps involved:
 
 Repeat the following a large number of times, and store the average Gen Err for each run and step:
 -	Randomly sample P binary inputs (-1, 1). Let P be large, so that P beta is alpha.
 - 	Randomly sample a (W1, W2, Omega) vector from a sphere (or include threshold for hypersphere)
-- 	For each monte carlo step:
+- 	For each monte carlo step (MCS):
 - 	Randomly add Gaussian noise to the parameters, then renormalize (such that acceptance rate is around 0.5)
 - 	Compute the difference in energy DeltaE associated with the change in parameters
 -	Accept the change with probability min(1, exp(-beta DeltaE))
 -	Regardless of whether it is accepted, compute the generalization error, by simply computing the average MSE for each of the 4 possible inputs
 
--	Discard results from the first 1000 or so MCS, and egin keeping track once the Energy is stable. 
--	For each of the 'interesting' steps, take the average generalization error and the standard deviation over all the runs
+-	Store the state of the system and corresponding errors for each MCS
 	
 """
 
@@ -45,7 +44,6 @@ def RunMCSNoThreshold(beta, targetAlphas, runs, MCS, title, discard = 100, step_
 	# Randomly initialize the parameters from a sphere
 	W1, W2, Omega = RandConfig()
 
-	
 	trueAlphas = []
 
 	for alphaidx in range(len(targetAlphas)):
@@ -55,6 +53,7 @@ def RunMCSNoThreshold(beta, targetAlphas, runs, MCS, title, discard = 100, step_
 			trueAlphas.append(round(targetAlphas[alphaidx] / beta * 2) * beta / 2)
 
 	GenErrArray = np.ndarray((len(trueAlphas), runs, MCS + 1))
+	OmegasArray = np.ndarray((len(trueAlphas), runs, MCS + 1))
 
 	for alphaidx in range(len(trueAlphas)):
 		for run in range(runs):
@@ -68,6 +67,7 @@ def RunMCSNoThreshold(beta, targetAlphas, runs, MCS, title, discard = 100, step_
 			while(True):
 				# Store the generalization error:
 				GenErrArray[alphaidx, run, step] = getGenError(W1, W2, Omega)
+				OmegasArray[alphaidx, run, step] = Omega
 				# Calculate energy/training error:
 				E = sum([ GetError(W1, W2, Omega, trainInputs[i]) for i in range(len(trainInputs))])
 				
@@ -92,23 +92,23 @@ def RunMCSNoThreshold(beta, targetAlphas, runs, MCS, title, discard = 100, step_
 
 				step += 1
 			print(acceptcount, nacceptcount)
-	#plottableData = np.array([np.average(GenErrArray[a, :, discard:])for a, _ in enumerate(alphas)])
-	#with open('data/MCdata.npy', 'wb') as f:	
+
 	with open('data/{}.npy'.format(title), 'wb') as f:
 		print(trueAlphas)
-		pickle.dump((GenErrArray, np.array(trueAlphas), beta, runs, MCS, step_scale, discard), f)
-		#np.save(f, GenErrArray)
+		pickle.dump((GenErrArray, np.array(trueAlphas), beta, runs, MCS, step_scale, discard, OmegasArray), f)
 
-		
-	#plt.plot([GenErrArray[a, 0, :] for a in range(len(alphas))][0])
-	#plt.show()
+	plt.xlabel('MCS')
+	plt.ylabel('Generalization error $\epsilon_g$')
+	plt.plot([GenErrArray[a, 0, :] for a in range(len(trueAlphas))][0])
+	plt.legend(['MC at T = 1000'], loc = 1)
+	plt.show()
 		
 #RunMCSNoThreshold(beta = 0.001, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1000_bigrun')
 #RunMCSNoThreshold(beta = 0.01, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T100_bigrun')
 #RunMCSNoThreshold(beta = 0.1, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T10_bigrun')
-RunMCSNoThreshold(beta = 1, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1_bigrun')
+#RunMCSNoThreshold(beta = 1, targetAlphas = [i / 4 for i in range(24)], runs = 30, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1_bigrun')
+RunMCSNoThreshold(beta = 0.001, targetAlphas = [i / 4 for i in range(24)], runs = 1, MCS = 500, discard = 100, step_scale = 0.3, title = 'T1000_bigrun_with_omegas')
 
 #RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 10 for i in range(9)], runs = 10, MCS = 500, discard = 100)
 
-# for most experiments discard was 100, MCS was 500, runs = 20, but for verysmallalpha.npy I did MCS 5000, runs = 100, discard = 1000. Also Gaussian scale was 0.3 for most, but verysmallalpha has 1.0.
 

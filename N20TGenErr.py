@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import math
 import pickle
 
-# This file serves to obtain by monte carlo simulation the generalization error for nonzero temperature
-# and thereby give empirical data to compare with the AA obtained result. 
-
+''' This file serves to obtain by monte carlo simulation the generalization error for ZERO temperature
+ and thereby give empirical data to compare with the analytic results (adapted from the N2GenErr.py file, to suit the T=0 case)
+'''
 """Steps involved:
 
 Repeat the following a large number of times, and store the average Gen Err for each run and step:
@@ -18,9 +18,7 @@ Repeat the following a large number of times, and store the average Gen Err for 
 -	Accept the change with probability min(1, exp(-beta DeltaE))
 -	Regardless of whether it is accepted, compute the generalization error, by simply computing the average MSE for each of the 4 possible inputs
 
--	Discard results from the first 1000 or so MCS, and egin keeping track once the Energy is stable. 
--	For each of the 'interesting' steps, take the average generalization error and the standard deviation over all the runs
-	
+-	Save state of the system throughout the MCS
 """
 
 inputs = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
@@ -89,8 +87,4 @@ def RunMCSNoThreshold(Plist, runs, MCS, title, discard = 100, step_scale = 0.5):
 				
 RunMCSNoThreshold(Plist = [i for i in range(15)], runs = 200, MCS = 500, discard = 100, step_scale = 0.7, title = 'T0_experiment')
 
-
-#RunMCSNoThreshold(beta = 0.001, alphas = [(i+1) / 10 for i in range(9)], runs = 10, MCS = 500, discard = 100)
-
-# for most experiments discard was 100, MCS was 500, runs = 20, but for verysmallalpha.npy I did MCS 5000, runs = 100, discard = 1000. Also Gaussian scale was 0.3 for most, but verysmallalpha has 1.0.
 
