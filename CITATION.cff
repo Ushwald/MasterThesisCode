@@ -1,8 +1,0 @@
-cff-version: 1.2.0
-message: "This code was written for the Master thesis of Oscar Tanis."
-authors:
-  - family-names: Tanis
-    given-names: Oscar
-title: "Statistical Mechanics of a Nonlinear Learning System: Source Code"
-version: 2.0.4
-date-released: 2022-03-15
